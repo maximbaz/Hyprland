@@ -269,6 +269,7 @@ void CCompositor::cleanup() {
 
     m_pLastFocus  = nullptr;
     m_pLastWindow = nullptr;
+    m_pPrevWindow = nullptr;
 
     // accumulate all PIDs for killing, also request closing.
     for (auto& w : m_vWindows) {
@@ -766,6 +767,7 @@ void CCompositor::focusWindow(CWindow* pWindow, wlr_surface* pSurface) {
         if (windowValidMapped(PLASTWINDOW)) {
             updateWindowAnimatedDecorationValues(PLASTWINDOW);
 
+            m_pPrevWindow = PLASTWINDOW;
             g_pXWaylandManager->activateWindow(PLASTWINDOW, false);
 
             if (PLASTWINDOW->m_phForeignToplevel)
@@ -805,8 +807,11 @@ void CCompositor::focusWindow(CWindow* pWindow, wlr_surface* pSurface) {
     if (windowValidMapped(PLASTWINDOW)) {
         updateWindowAnimatedDecorationValues(PLASTWINDOW);
 
-        if (!pWindow->m_bIsX11 || pWindow->m_iX11Type == 1)
+        if (!pWindow->m_bIsX11 || pWindow->m_iX11Type == 1) {
+            if (PLASTWINDOW != pWindow)
+                m_pPrevWindow = PLASTWINDOW;
             g_pXWaylandManager->activateWindow(PLASTWINDOW, false);
+        }
 
         if (PLASTWINDOW->m_phForeignToplevel)
             wlr_foreign_toplevel_handle_v1_set_activated(PLASTWINDOW->m_phForeignToplevel, false);
@@ -1055,6 +1060,15 @@ int CCompositor::getWindowsOnWorkspace(const int& id) {
     }
 
     return no;
+}
+
+CWindow* CCompositor::getUrgentWindow() {
+    for (auto& w : m_vWindows) {
+        if (w->m_bIsMapped && w->m_bIsUrgent)
+            return w.get();
+    }
+
+    return nullptr;
 }
 
 bool CCompositor::hasUrgentWindowOnWorkspace(const int& id) {

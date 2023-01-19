@@ -94,6 +94,7 @@ class CCompositor {
 
     wlr_surface*                              m_pLastFocus   = nullptr;
     CWindow*                                  m_pLastWindow  = nullptr;
+    CWindow*                                  m_pPrevWindow  = nullptr;
     CMonitor*                                 m_pLastMonitor = nullptr;
 
     SSeat                                     m_sSeat;
@@ -135,6 +136,7 @@ class CCompositor {
     void           sanityCheckWorkspaces();
     void           updateWorkspaceWindowDecos(const int&);
     int            getWindowsOnWorkspace(const int&);
+    CWindow*       getUrgentWindow();
     bool           hasUrgentWindowOnWorkspace(const int&);
     CWindow*       getFirstWindowOnWorkspace(const int&);
     CWindow*       getFullscreenWindowOnWorkspace(const int&);
